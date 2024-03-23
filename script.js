@@ -1,7 +1,8 @@
-const jmSVGpoints = [];
+const jmSVGMap = new Map();
 const jmPoints=[];
-const jlines=[]
+const jlines=new Map();
 const jHull=[];
+const jActions=[];
 
 const kpsSVGpoints = [];
 const kpsPoints=[];
@@ -17,10 +18,10 @@ const jarvisContainer = SVG()
     const crect = jmcont.getBoundingClientRect();
     const point = jarvisContainer.circle(5)
       .center(event.clientX-crect.left, event.clientY-crect.top)
-      .fill('#f06');
-    jmSVGpoints.push(point);
-    let pt= new Point(event.clientX-crect.left, event.clientY-crect.top);
-    jmPoints.push(pt);
+      .fill('#000');
+      let pt= new Point(event.clientX-crect.left, event.clientY-crect.top);
+      jmPoints.push(pt);
+      jmSVGMap.set(pt,point); //
   });
 
 const kpscont = document.getElementById('kirkPS');
@@ -32,7 +33,7 @@ const kpsContainer = SVG()
     const crect = kpscont.getBoundingClientRect();
     const point = kpsContainer.circle(5)
       .center(event.clientX-crect.left, event.clientY-crect.top)
-      .fill('#f06');
+      .fill('#000');
     kpsSVGpoints.push(point);
     let pt= new Point(event.clientX-crect.left, event.clientY-crect.top);
     kpsPoints.push(pt);
@@ -68,7 +69,8 @@ function findAngle(prev_o,o,p) {
     degree_angle=degree_angle+180
     return degree_angle
 }
-function findNextOrigin(prev_o,o,points){
+function findNextOrigin(prev_o,o,points,action){
+    let flag=0;
     let best_angle = 360
     let best_point = null
     // console.log(o)
@@ -78,11 +80,21 @@ function findNextOrigin(prev_o,o,points){
         }
         let angle=findAngle(prev_o,o,points[i])
         if(angle < best_angle){
-          drawCandLine(jarvisContainer,o,points[i]);
+          // drawCandLine(jarvisContainer,o,points[i]);
+          if(flag===0){
+            action.push(["asl",o,points[i]]);
+            flag++;
+          }else{
+            action.push(["adl",o,points[i]]);
+            action.push(["rsl"]);
+            action.push(["asl",o,points[i]]);
+
+          }
+
             best_angle = angle
             best_point = JSON.parse(JSON.stringify(points[i]));
             // console.log(best_point)
-            markCandPoint(best_point);
+            // markCandPoint(best_point);
         }
         else if(angle == best_angle){
             if(Math.hypot(o.x-best_point.x, o.y-best_point.y)>Math.hypot(o.x-points[i].x, o.y-points[i].y)){
@@ -90,14 +102,18 @@ function findNextOrigin(prev_o,o,points){
                 best_point = JSON.parse(JSON.stringify(points[i]));
             }
         }
+        else{
+          action.push(["adl",o,points[i]]);
+          action.push(["rdl"]);
+        }
         
     }
-    markHullPoint(best_point);
-    drawHullLine(jarvisContainer,o,best_point)
+    // markHullPoint(best_point);
+    // drawHullLine(jarvisContainer,o,best_point)
     return best_point
 
 }
-function Jarvis(points, svgpoints, lines, hullpoints){
+function Jarvis(points, svgmap, lines, hullpoints, action){
     let hull = []
     let i=0;
     let origin=new Point(Number.MAX_SAFE_INTEGER,Number.MAX_SAFE_INTEGER)
@@ -106,39 +122,43 @@ function Jarvis(points, svgpoints, lines, hullpoints){
             origin = JSON.parse(JSON.stringify(points[i]));
         }
     }
+    action.push(["ccb",origin]);
     prev_o = JSON.parse(JSON.stringify(origin));  
     prev_o.x = prev_o.x+0.001
     // console.log(origin)
-    hull.push(origin)
+    hull.push(origin);
     hullpoints.push(origin);
-    markHullPoint(origin);
+    // markHullPoint(origin);
     while(true){
-      let candidate  = findNextOrigin(prev_o,origin,points)
+      let candidate  = findNextOrigin(prev_o,origin,points,action);
+      action.push(["ccg",origin]);
       // markCandPoint(candidate)
       if(hull.some((item) => shallowEqualityCheck(item, candidate))){
-        markHullPoint(candidate);
-        markHullPoint(origin);
+        // markHullPoint(candidate);
+        action.push(["ccg",candidate]);
+        
         break
+      }
+      else{
+        action.push(["ccb",candidate]);
+
       }
       hull.push(candidate)
       hullpoints.push(candidate)
-      markHullPoint(candidate);
-      markHullPoint(origin);
         prev_o = JSON.parse(JSON.stringify(origin));
         origin = JSON.parse(JSON.stringify(candidate));
-        markCurPoint(origin);
+        // markCurPoint(origin);
     }
-    
-
     return hull
 }
 
+const solidLine=[]
+const dotLine=[]
 document.getElementById('jmRun').addEventListener('click', () => {
-  // jarvisContainer.clear();
-  console.log(jmSVGpoints);
-  console.log(jmPoints);
-  Jarvis(jmPoints,jmSVGpoints,jlines,jHull)
+  Jarvis(jmPoints,jmSVGMap,jlines,jHull, jActions)
   document.getElementById("jmRun").disabled = true;
+  // console.log(jActions);
+  performActions(jActions,solidLine,dotLine,600);
 });
 
 document.getElementById('jmRand').addEventListener('click', () => {
@@ -149,8 +169,8 @@ document.getElementById('jmRand').addEventListener('click', () => {
     const point = jarvisContainer.circle(5)
     .center(rx,ry)
     .fill('#f06');
-    jmSVGpoints.push(point);
     let pt= new Point(rx,ry);
+    jmSVGMap.set(pt,point);//
     jmPoints.push(pt);
   }
 });
@@ -159,14 +179,13 @@ document.getElementById('jmClr').addEventListener('click', () => {
   document.getElementById("jmRun").disabled = false;
 
   jarvisContainer.clear();
-  let sz=jmSVGpoints.length;
-  for(let i=0;i<sz;i++){
-    jmSVGpoints.pop();
+  for (const [key, value] of jmSVGMap) {
+    jmSVGMap.delete(key);
   }
-  sz=jlines.length
-  for(let i=0;i<sz;i++){
-    jlines.pop();
+  for (const [key, value] of jlines) {
+    jlines.delete(key);
   }
+  
   sz=jmPoints.length
   for(let i=0;i<sz;i++){
     jmPoints.pop();
@@ -175,8 +194,60 @@ document.getElementById('jmClr').addEventListener('click', () => {
   for(let i=0;i<sz;i++){
     jHull.pop();
   }
+  sz=jActions.length;
+  for(let i=0;i<sz;i++){
+    jActions.pop();
+  }
+  sz= solidLine.length
+  for(let i=0;i<sz;i++){
+    solidLine.pop();
+  }
+  sz= dotLine.length
+  for(let i=0;i<sz;i++){
+    dotLine.pop();
+  }
 
 });
+
+
+function performActions(actionArray, solidLine,dotLine, delay) {
+  if (actionArray.length === 0) return; 
+  const action = actionArray.shift();
+  console.log(action);
+  if(action[0]==="ccb"){
+    markCurPoint(action[1]);
+  }
+  else if(action[0]==="ccg"){
+    markHullPoint(action[1]);
+  }
+  else if(action[0]==="asl"){
+    const line = jarvisContainer.line(action[1].x, action[1].y, action[2].x, action[2].y)
+          .stroke({ width: 3, color: '#f06' })
+    solidLine.push(line);
+    // console.log(solidLine)
+  }
+  else if(action[0]==="rsl"){
+    const deline= solidLine.pop();
+    deline.remove();
+  }
+  else if(action[0]==="adl"){
+    const line = jarvisContainer.line(action[1].x, action[1].y, action[2].x, action[2].y)
+          .stroke({ width: 2, color: '#337357' })
+          .attr('stroke-dasharray', '10,5');
+    dotLine.push(line);
+    // console.log(dotLine)
+  }
+  else if(action[0]==="rdl"){
+    let deline= dotLine.pop();
+    deline.remove();
+    while(dotLine.length!==0){
+      deline= dotLine.pop();
+      deline.remove();
+    }
+  }
+  // console.log(action);
+  setTimeout(() => performActions(actionArray,solidLine,dotLine, delay), delay);
+}
 
 const markHullPoint=(point)=>{
   jarvisContainer.circle(10)
@@ -190,29 +261,10 @@ const markCandPoint=(point)=>{
       .fill('#f06');
 }
 
-const rmvCandPoint=(point)=>{
-  // jarvisContainer.circle(10)
-  //     .center(point.x,point.y)
-  //     .fill('rgb(249, 245, 230)');
-  jarvisContainer.circle(5)
-      .center(point.x,point.y)
-      .fill('#f06');
-}
 const markCurPoint=(point)=>{
   jarvisContainer.circle(10)
       .center(point.x,point.y)
       .fill('#0943F4');
-}
-
-const drawCandLine=(draw,org,cand)=>{
-  const line = draw.line(org.x, org.y, cand.x, cand.y)
-          .stroke({ width: 2, color: '#000' })
-          .attr('stroke-dasharray', '2,2');
-}
-
-const drawHullLine=(draw,org,cand)=>{
-  const line = draw.line(org.x, org.y, cand.x, cand.y)
-          .stroke({ width: 3, color: '#0943F4' })
 }
 
 const getRandomNumber=(min, max)=> {
