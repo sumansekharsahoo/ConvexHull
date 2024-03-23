@@ -1,0 +1,48 @@
+body{
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.algoHeading{
+  font-size: 30px;
+  text-align: center;
+}
+.buttons{
+  padding:10px;  
+  display: flex;
+  justify-content: center;
+}
+.run{
+  margin-right: 10px;
+}
+.rand{
+  margin-right: 10px;
+}
+.btn{
+  font-size: 16px;
+  padding: 3px 12px;
+}
+.container{
+  display:flex;
+  flex-direction: column;
+}
+#jarvisMarch{
+  width: 700px;
+  height: 500px;
+  margin: 5px 10px 0px 10px;
+  /* border:2px solid black; */
+  border-radius: 10px;
+  background-color: #fcf1d3;
+  cursor: crosshair;
+}
+#kirkPS{
+  width: 700px;
+  height: 500px;
+  margin: 5px 10px 0px 10px;
+  /* border:2px solid black; */
+  border-radius: 10px;
+  background-color: #ebf7f2;
+  cursor: crosshair;
+}
