@@ -24,6 +24,9 @@ body{
   font-size: 16px;
   padding: 3px 12px;
 }
+.rply{
+  margin-right: 10px;
+}
 .container{
   display:flex;
   flex-direction: column;

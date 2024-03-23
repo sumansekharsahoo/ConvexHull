@@ -1,13 +1,13 @@
 const jmSVGMap = new Map();
 const jmPoints=[];
-const jlines=new Map();
 const jHull=[];
 const jActions=[];
 
-const kpsSVGpoints = [];
+const kpsSVGMap = new Map();
 const kpsPoints=[];
-const kpslines=[]
 const kpsHull=[];
+const kpsActions=[];
+
 
 const jmcont = document.getElementById('jarvisMarch');
 const jarvisContainer = SVG()
@@ -88,13 +88,11 @@ function findNextOrigin(prev_o,o,points,action){
             action.push(["adl",o,points[i]]);
             action.push(["rsl"]);
             action.push(["asl",o,points[i]]);
-
+            action.push(["rdl"]);
           }
 
             best_angle = angle
             best_point = JSON.parse(JSON.stringify(points[i]));
-            // console.log(best_point)
-            // markCandPoint(best_point);
         }
         else if(angle == best_angle){
             if(Math.hypot(o.x-best_point.x, o.y-best_point.y)>Math.hypot(o.x-points[i].x, o.y-points[i].y)){
@@ -108,12 +106,10 @@ function findNextOrigin(prev_o,o,points,action){
         }
         
     }
-    // markHullPoint(best_point);
-    // drawHullLine(jarvisContainer,o,best_point)
     return best_point
 
 }
-function Jarvis(points, svgmap, lines, hullpoints, action){
+function Jarvis(points, svgmap, hullpoints, action){
     let hull = []
     let i=0;
     let origin=new Point(Number.MAX_SAFE_INTEGER,Number.MAX_SAFE_INTEGER)
@@ -154,11 +150,12 @@ function Jarvis(points, svgmap, lines, hullpoints, action){
 
 const solidLine=[]
 const dotLine=[]
+const circles=[]
 document.getElementById('jmRun').addEventListener('click', () => {
-  Jarvis(jmPoints,jmSVGMap,jlines,jHull, jActions)
+  Jarvis(jmPoints,jmSVGMap,jHull, jActions)
   document.getElementById("jmRun").disabled = true;
   // console.log(jActions);
-  performActions(jActions,solidLine,dotLine,600);
+  performActions(jActions,solidLine,dotLine,circles,600);
 });
 
 document.getElementById('jmRand').addEventListener('click', () => {
@@ -168,7 +165,7 @@ document.getElementById('jmRand').addEventListener('click', () => {
     let ry= getRandomNumber(40,460)
     const point = jarvisContainer.circle(5)
     .center(rx,ry)
-    .fill('#f06');
+    .fill('#000');
     let pt= new Point(rx,ry);
     jmSVGMap.set(pt,point);//
     jmPoints.push(pt);
@@ -181,9 +178,6 @@ document.getElementById('jmClr').addEventListener('click', () => {
   jarvisContainer.clear();
   for (const [key, value] of jmSVGMap) {
     jmSVGMap.delete(key);
-  }
-  for (const [key, value] of jlines) {
-    jlines.delete(key);
   }
   
   sz=jmPoints.length
@@ -209,16 +203,58 @@ document.getElementById('jmClr').addEventListener('click', () => {
 
 });
 
+document.getElementById('jmLClr').addEventListener('click', () => {
+  document.getElementById("jmRun").disabled = false;
 
-function performActions(actionArray, solidLine,dotLine, delay) {
+  // jarvisContainer.clear();
+
+  // for (const [key, value] of jmSVGMap) {
+  //   jmSVGMap.delete(key);
+  // }
+  
+  // sz=jmPoints.length
+  // for(let i=0;i<sz;i++){
+  //   jmPoints.pop();
+  // }
+  sz=jHull.length
+  for(let i=0;i<sz;i++){
+    jHull.pop();
+  }
+  sz=jActions.length;
+  for(let i=0;i<sz;i++){
+    jActions.pop();
+  }
+  sz= solidLine.length
+  for(let i=0;i<sz;i++){
+    let ps= solidLine.pop();
+    ps.remove();
+  }
+  sz= dotLine.length
+  for(let i=0;i<sz;i++){
+    let ps=dotLine.pop();
+    ps.remove();
+  }
+  sz= circles.length
+  for(let i=0;i<sz;i++){
+    let ps=circles.pop();
+    ps.remove();
+  }
+  Jarvis(jmPoints,jmSVGMap,jHull, jActions)
+  document.getElementById("jmRun").disabled = true;
+  // console.log(jActions);
+  performActions(jActions,solidLine,dotLine,circles,600);
+});
+
+
+function performActions(actionArray, solidLine,dotLine, circles, delay) {
   if (actionArray.length === 0) return; 
   const action = actionArray.shift();
   console.log(action);
   if(action[0]==="ccb"){
-    markCurPoint(action[1]);
+    circles.push(markCurPoint(action[1]));
   }
   else if(action[0]==="ccg"){
-    markHullPoint(action[1]);
+    circles.push(markHullPoint(action[1]));
   }
   else if(action[0]==="asl"){
     const line = jarvisContainer.line(action[1].x, action[1].y, action[2].x, action[2].y)
@@ -238,35 +274,86 @@ function performActions(actionArray, solidLine,dotLine, delay) {
     // console.log(dotLine)
   }
   else if(action[0]==="rdl"){
-    let deline= dotLine.pop();
-    deline.remove();
     while(dotLine.length!==0){
       deline= dotLine.pop();
       deline.remove();
     }
   }
   // console.log(action);
-  setTimeout(() => performActions(actionArray,solidLine,dotLine, delay), delay);
+  setTimeout(() => performActions(actionArray,solidLine,dotLine, circles, delay), delay);
 }
 
 const markHullPoint=(point)=>{
-  jarvisContainer.circle(10)
+  const gp=jarvisContainer.circle(10)
       .center(point.x,point.y)
       .fill('#4CE45C');
+  return gp;
 }
 
-const markCandPoint=(point)=>{
-  jarvisContainer.circle(8)
-      .center(point.x,point.y)
-      .fill('#f06');
-}
 
 const markCurPoint=(point)=>{
-  jarvisContainer.circle(10)
+  const bp=jarvisContainer.circle(10)
       .center(point.x,point.y)
       .fill('#0943F4');
+  return bp;
 }
 
 const getRandomNumber=(min, max)=> {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+const solidLine2=[]
+const dotLine2=[]
+document.getElementById('kpsRun').addEventListener('click', () => {
+  
+  document.getElementById("kpsRun").disabled = true;
+  
+});
+
+document.getElementById('kpsRand').addEventListener('click', () => {
+  const noPoints = getRandomNumber(8, 18);
+  for(let i=0;i<noPoints;i++){
+    let rx=getRandomNumber(40,660);
+    let ry= getRandomNumber(40,460)
+    const point = kpsContainer.circle(5)
+    .center(rx,ry)
+    .fill('#000');
+    let pt= new Point(rx,ry);
+    kpsSVGMap.set(pt,point);//
+    kpsPoints.push(pt);
+  }
+});
+
+document.getElementById('kpsClr').addEventListener('click', () => {
+  document.getElementById("kpsRun").disabled = false;
+
+  kpsContainer.clear();
+  for (const [key, value] of kpsSVGMap) {
+    kpsSVGMap.delete(key);
+  }
+  for (const [key, value] of kpslines) {
+    kpslines.delete(key);
+  }
+  
+  sz=kpsPoints.length
+  for(let i=0;i<sz;i++){
+    kpsPoints.pop();
+  }
+  sz=kpsHull.length
+  for(let i=0;i<sz;i++){
+    kpsHull.pop();
+  }
+  sz=kpsActions.length;
+  for(let i=0;i<sz;i++){
+    kpsActions.pop();
+  }
+  sz= solidLine2.length
+  for(let i=0;i<sz;i++){
+    solidLine2.pop();
+  }
+  sz= dotLine2.length
+  for(let i=0;i<sz;i++){
+    dotLine2.pop();
+  }
+
+});
