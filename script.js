@@ -608,11 +608,7 @@ function getUpperHull(points,actions,flp) {
         if (points[i][0] === leftMost[0] && points[i][1] > leftMost[1])
             leftMost = points[i]
     }
-    if(flp){
-      actions.push(["kabp",flipval(leftMost)])
-    }else{
-      actions.push(["kabp",leftMost])
-    }
+
     for (let i = 1; i < points.length; i++) {
         if (points[i][0] > rightMost[0])
             rightMost = points[i]
@@ -622,9 +618,9 @@ function getUpperHull(points,actions,flp) {
             rightMost = points[i]
     }
     if(flp){
-      actions.push(["kabp",flipval(rightMost)])
+      actions.push(["kabp",flipval(leftMost),flipval(rightMost)])
     }else{
-      actions.push(["kabp",rightMost])
+      actions.push(["kabp",leftMost,rightMost])
     }
     let newPoints = []
     newPoints.push(leftMost)
@@ -693,7 +689,7 @@ const kpsMarkCur=(point)=>{
 const kpsMarkHidden=(point)=>{
   const gp=kpsContainer.circle(5)
       .center(point[0],point[1])
-      .fill('#B4B3B4');
+      .fill('#D8D8D8');
   return gp;
 }
 
@@ -707,7 +703,7 @@ document.getElementById('kpsRun').addEventListener('click', () => {
 });
 
 document.getElementById('kpsRand').addEventListener('click', () => {
-  const noPoints = getRandomNumber(6, 11);
+  const noPoints = getRandomNumber(8, 11);
   for(let i=0;i<noPoints;i++){
     let rx=getRandomNumber(40,660);
     let ry= getRandomNumber(40,460)
@@ -736,9 +732,8 @@ document.getElementById('kpsClr').addEventListener('click', () => {
   for(let i=0;i<sz;i++){
     kpsPoints.pop();
   }
-  sz=kpsHull.length
-  for(let i=0;i<sz;i++){
-    kpsHull.pop();
+  for(let i of kpsHull){
+    kpsHull.delete(i)
   }
   sz=kpsActions.length;
   for(let i=0;i<sz;i++){
@@ -756,7 +751,10 @@ document.getElementById('kpsClr').addEventListener('click', () => {
   for(let i=0;i<sz;i++){
     hullines.pop();
   }
-  console.log("hello",kpsSVGMap)
+  for(const [key,val] of dottedlines){
+    val.remove();
+  }
+  dottedlines.clear();
 });
 
 document.getElementById('kpsLClr').addEventListener('click', () => {
@@ -768,10 +766,12 @@ document.getElementById('kpsLClr').addEventListener('click', () => {
       v.remove();
     }
   }
-  
-  sz=kpsHull.length
-  for(let i=0;i<sz;i++){
-    kpsHull.pop();
+  for(const [key,val] of dottedlines){
+    val.remove();
+  }
+  dottedlines.clear();
+  for(let i of kpsHull){
+    kpsHull.delete(i)
   }
   sz=kpsActions.length;
   for(let i=0;i<sz;i++){
@@ -791,7 +791,10 @@ document.getElementById('kpsLClr').addEventListener('click', () => {
     let hl=hullines.pop();
     hl.remove();
   }
-  
+  convexHull(kpsPoints,kpsActions)
+  document.getElementById("kpsRun").disabled = true;
+  // console.log(kpsActions);
+  kpsPerformActions(kpsActions,500,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
 });
 
 const findintercept=(pt,slp)=>{
@@ -819,14 +822,15 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
   }
   else if(action[0]==="kabp"){
     let pt =kpsMarkCur(action[1]);
-    console.log(action[1]);
-    console.log(pointMap.has(action[1].toString()))
+    let pt2 =kpsMarkCur(action[2]);
     // console.log(pointMap);
     let arr= pointMap.get(action[1].toString());
     console.log(arr)
     arr.push(pt)
+    arr.push(pt2)
     pointMap.set(action[1].toString(),arr);
     hullpt.add(action[1].toString());
+    hullpt.add(action[2].toString());
   }
   else if(action[0]==="hidp"){
     for(pt of action[1]){
@@ -849,18 +853,18 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
     }
     console.log(hullines)
     for(let i=0;i<hullines.length;i++){
-      hullines[i].stroke({ color: '#CC6CE7' });
+      hullines[i].stroke({ color: '#f06'});
     }
   }
   else if(action[0]==="dsl"){
     console.log(pointMap.has(action[1].toString()),pointMap.has(action[2].toString()))
     const line = kpsContainer.line(action[1][0], action[1][1], action[2][0], action[2][1])
-          .stroke({ width: 3, color: '#f06' })
+          .stroke({ width: 3, color: '#E26EE5' })
     hullines.push(line);
   }
   else if(action[0]==="ddl"){
     const line = kpsContainer.line(action[1][0], action[1][1], action[2][0], action[2][1])
-          .stroke({ width: 3, color: '#000' })
+          .stroke({ width: 3, color: '#A9A9A9' })
           .attr('stroke-dasharray', '10,5');
     dottedlines.set([action[1],action[2]].toString(),line);
   }
@@ -891,14 +895,14 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
   }
   else if(action[0]==="kmedx"){
     const line = kpsContainer.line(action[1], 25, action[1], 475)
-          .stroke({ width: 2, color: '#337357' })
+          .stroke({ width: 2, color: '#00bbbb' })
           .attr('stroke-dasharray', '10,5');
     templines.push(line);
   }
   else if(action[0]==="dsup"){
     let endpts= findintercept(action[1],action[2]);
     const line = kpsContainer.line(endpts[0][0],endpts[0][1],endpts[1][0],endpts[1][1])
-          .stroke({ width: 2, color: '#fcba03' })
+          .stroke({ width: 2, color: '#820300' })
           .attr('stroke-dasharray', '10,5');
     templines.push(line);
   }
