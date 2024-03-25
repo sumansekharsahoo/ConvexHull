@@ -6,7 +6,7 @@ const jActions=[];
 
 const kpsSVGMap = new Map();
 const kpsPoints=[];
-const kpsHull=[];
+const kpsHull= new Set();
 const kpsActions=[];
 
 const getRandomNumber=(min, max)=> {
@@ -41,7 +41,7 @@ const kpsContainer = SVG()
       .fill('#000');
     let pt= [event.clientX-crect.left, event.clientY-crect.top];
     kpsPoints.push(pt);
-    kpsSVGMap.set(pt,point);
+    kpsSVGMap.set(pt.toString(),[point]);
   });
 
 //jarvis March functions
@@ -306,12 +306,12 @@ function flipval(point){
   return [-point[0],-point[1]];
 }
 
-function printMat(points) {
-    for (let point of points) {
-        let x = point[0], y = point[1]
-        console.log(x + " " + y)
-    }
-}
+// function printMat(points) {
+//     for (let point of points) {
+//         let x = point[0], y = point[1]
+//         console.log(x + " " + y)
+//     }
+// }
 
 function integerDivision(dividend, divisor) {
     return Math.floor(dividend / divisor);
@@ -334,7 +334,7 @@ function quickselect(points, k) {
     return sortedPoints[k]
 }
 
-function getBridge(points, median) {
+function getBridge(points, median,actions,flp) {
     // console.log(median)
     // console.log(points)
     let candidates = new Set()
@@ -363,6 +363,12 @@ function getBridge(points, median) {
                 return a[1] - b[1]
         })
         pairs.push(pair)
+        if(flp){
+          actions.push(["ddl",flipval(pair[0]),flipval(pair[1])]);
+        }
+        else{
+          actions.push(["ddl",pair[0],pair[1]]);
+        }
     }
     // console.log("PAIRS :", pairs)
 
@@ -373,10 +379,22 @@ function getBridge(points, median) {
         let p1 = pairs[i][0]
         let p2 = pairs[i][1]
         if (p1[0] === p2[0]) {
-            if (p1[1] > p2[1])
-                candidates.add(p1)
-            else
-                candidates.add(p2)
+            if (p1[1] > p2[1]){
+              candidates.add(p1)
+              if(flp){
+                actions.push(["hidp",[flipval(p2)]])
+              }else{
+                actions.push(["hidp",[p2]])
+              }
+            }
+            else{
+              candidates.add(p2)
+              if(flp){
+                actions.push(["hidp",[flipval(p1)]])
+              }else{
+                actions.push(["hidp",[p1]])
+              }
+            }
             pairs.splice(i, 1)
             i--
         } 
@@ -389,20 +407,51 @@ function getBridge(points, median) {
     let med_index = Math.floor(slopes.length / 2) - (slopes.length % 2 === 0 ? 1 : 0);
     let med_slope = quickselect(slopes, med_index)
     let small = [], equal = [], large = []
-
+    console.log("pairs",pairs);
     for (let i in slopes) {
-        if (slopes[i] < med_slope)
-            small.push(pairs[i])
-        else if (slopes[i] > med_slope)
-            large.push(pairs[i])
-        else
-            equal.push(pairs[i])
+        if (slopes[i] < med_slope){
+          small.push(pairs[i])
+          if(flp){
+            actions.push(["crdl",flipval(pairs[i][0]),flipval(pairs[i][1])]);
+          }else{
+            actions.push(["crdl",pairs[i][0],pairs[i][1]]);
+          }
+        }
+        else if (slopes[i] > med_slope){
+          large.push(pairs[i])
+          if(flp){
+            actions.push(["cgdl",flipval(pairs[i][0]),flipval(pairs[i][1])]);
+          }else{
+            actions.push(["cgdl",pairs[i][0],pairs[i][1]]);
+          }
+        }
+        else{
+          equal.push(pairs[i])
+          if(flp){
+            actions.push(["cydl",flipval(pairs[i][0]),flipval(pairs[i][1])]);
+          }else{
+            actions.push(["cydl",pairs[i][0],pairs[i][1]]);
+          }
+        }
     }
+    console.log("small",small);
+    console.log("large",large);
+    console.log("equal",equal);
 
     let max_intercept = -Infinity
+    let max_point=[-Infinity,-Infinity]
     for (let point of points)
-        if (max_intercept < point[1] - med_slope * point[0])
-            max_intercept = point[1] - med_slope * point[0]
+    if (max_intercept < point[1] - med_slope * point[0]){
+      max_intercept = point[1] - med_slope * point[0]
+      max_point=point
+    }
+    
+
+    if(flp)
+      actions.push(["dsup",flipval(max_point),med_slope]);
+    else
+      actions.push(["dsup",max_point,med_slope]);
+
     
     let max_set = new Set()
     for (let point of points) {
@@ -424,17 +473,31 @@ function getBridge(points, median) {
         if ((max_set[i][0] > right[0]) || (max_set[i][0] === right[0] && max_set[i][1] > right[1]))
             right = max_set[i]
     
+    //highlight l and r 
+    if(flp){
+      actions.push(["hrc",left,right]);
+    }else{
+      actions.push(["hrc",left,right]);
+    }
     // console.log(left)
     // console.log(right)
     
 
     if (left[0] <= median && right[0] >= median)
-        return [left, right]
+    {
+      return [left, right]
+
+    }
 
     if (right[0] <= median) {
         let largeEqual = new Set([...large, ...equal]);
-        for (let [_, point] of largeEqual) {
+        for (let [pt, point] of largeEqual) {
             candidates.add(point);
+            if(flp){
+              actions.push(["hidp",[flipval(pt)]]);
+            }else{
+              actions.push(["hidp",[pt]]);
+            }
         }
 
         for (let pair of small) {
@@ -446,8 +509,14 @@ function getBridge(points, median) {
 
     if (left[0] > median) {
         let smallEqual = new Set([...small, ...equal]);
-        for (let [point, _] of smallEqual) {
+        for (let [point, pt] of smallEqual) {
             candidates.add(point);
+            //hide pt
+            if(flp){
+              actions.push(["hidp",[flipval(pt)]]);
+            }else{
+              actions.push(["hidp",[pt]]);
+            }
         }
 
         for (let pair of large) {
@@ -457,11 +526,13 @@ function getBridge(points, median) {
         }
     }
 
+    actions.push(["radl"]);
+
     candidates = Array.from(candidates)
     // console.log("Candidates: ", candidates)
     // console.log()
     
-    return getBridge(candidates, median)
+    return getBridge(candidates, median,actions,flp)
 }
 
 function connect(p1, p2, points, actions,flp) {
@@ -480,23 +551,51 @@ function connect(p1, p2, points, actions,flp) {
     }else{
       actions.push(["kmedx",(leftMax[0]+rightMin[0])/2]);
     }
-    let [left, right] = getBridge(points, (leftMax[0] + rightMin[0]) / 2)
+    let [left, right] = getBridge(points, (leftMax[0] + rightMin[0]) / 2,actions,flp)
+    actions.push(["radl"]);
+    console.log(flp,left,right)
+    if(flp){
+      actions.push(["dsl",flipval(left),flipval(right)]);
+    }else{
+      actions.push(["dsl",left,right]);
+    }
     let small = new Set(), large = new Set()
     
     small.add(left);
     for (let point of points)
         if (point[0] < left[0])
             small.add(point);
-
+    
     large.add(right);
     for (let point of points)
         if (point[0] > right[0])
             large.add(point);
-    
+
+    let smalllarge= new Set();
+    for(let x of small){
+      smalllarge.add(x);
+    }
+    for(let x of large){
+      smalllarge.add(x);
+    }
+
+    let hidp=[]
+    for(const el of points){
+      if(!smalllarge.has(el)){
+        if(flp){
+          hidp.push(flipval(el));
+
+        }else{
+          hidp.push(el);
+        }
+      }
+    }
+    actions.push(["hidp",hidp]);
+
     small = Array.from(small)
     large = Array.from(large)
 
-    return connect(p1, left, small,actions).concat(connect(right, p2, large,actions))
+    return connect(p1, left, small,actions,flp).concat(connect(right, p2, large,actions,flp))
 }
 
 function getUpperHull(points,actions,flp) {
@@ -510,9 +609,9 @@ function getUpperHull(points,actions,flp) {
             leftMost = points[i]
     }
     if(flp){
-      actions.push(["kagp",flipval(leftMost)])
+      actions.push(["kabp",flipval(leftMost)])
     }else{
-      actions.push(["kagp",leftMost])
+      actions.push(["kabp",leftMost])
     }
     for (let i = 1; i < points.length; i++) {
         if (points[i][0] > rightMost[0])
@@ -523,36 +622,34 @@ function getUpperHull(points,actions,flp) {
             rightMost = points[i]
     }
     if(flp){
-      actions.push(["kagp",flipval(rightMost)])
+      actions.push(["kabp",flipval(rightMost)])
     }else{
-      actions.push(["kagp",rightMost])
+      actions.push(["kabp",rightMost])
     }
     let newPoints = []
     newPoints.push(leftMost)
-    let maxy= Math.max(leftMost[1],rightMost[1]);
-    let hidp=[]
+    let miny= Math.min(leftMost[1],rightMost[1]);
     for (let point of points) {
-        if (point[0] > leftMost[0] && point[0] < rightMost[0] && point[1]>=maxy){
-          newPoints.push(point)
-        }
+      if (point[0] > leftMost[0] && point[0] < rightMost[0] && point[1]>=miny){
+        newPoints.push(point)
+      }
     }
     newPoints.push(rightMost)
     const setNew= new Set(newPoints);
+    let hidp=[]
     for(const el of points){
       if(!setNew.has(el)){
         if(flp){
-          hidp.push(el);
-        }else{
           hidp.push(flipval(el));
+        }else{
+          hidp.push(el);
         }
       }
     }
     actions.push(["hidp",hidp]);
     points = newPoints
     // console.log("After taking LR: ", points)
-
     return connect(leftMost, rightMost, points,actions, flp)
-
 }
 
 function convexHull(points,actions) {
@@ -560,12 +657,13 @@ function convexHull(points,actions) {
     //unhide hidden
     actions.push(["uhid"])
     let flippedPoints = flipped(points);
+    actions.push(["radl"]);
     // console.log("Flipped Points: ", flippedPoints)
     let lowerHull = getUpperHull(flippedPoints,actions,1);
     lowerHull = flipped(lowerHull);
-
+    actions.push(["uhid"])
     // console.log(upperHull)
-    // console.log(lowerHull)
+    console.log("######################")
     
 
     if (upperHull[upperHull.length - 1][0] === lowerHull[0][0] && upperHull[upperHull.length - 1][1] === lowerHull[0][1])
@@ -577,38 +675,47 @@ function convexHull(points,actions) {
 }
 
 const kpsMarkHull=(point)=>{
+  // console.log(point);
   const gp=kpsContainer.circle(10)
       .center(point[0],point[1])
       .fill('#4CE45C');
   return gp;
 }
 
+const kpsMarkCur=(point)=>{
+  // console.log(point);
+  const gp=kpsContainer.circle(10)
+      .center(point[0],point[1])
+      .fill('#4287f5');
+  return gp;
+}
+
 const kpsMarkHidden=(point)=>{
   const gp=kpsContainer.circle(5)
       .center(point[0],point[1])
-      .fill('#8F8E91');
+      .fill('#B4B3B4');
   return gp;
 }
 
 //kps buttons
-const solidLine2=[]
-const dotLine2=[]
 document.getElementById('kpsRun').addEventListener('click', () => {
-  convexHull(points,kpsActions)
+  convexHull(kpsPoints,kpsActions)
   document.getElementById("kpsRun").disabled = true;
-  
+  // console.log(kpsActions);
+  kpsPerformActions(kpsActions,500,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
+
 });
 
 document.getElementById('kpsRand').addEventListener('click', () => {
-  const noPoints = getRandomNumber(8, 18);
+  const noPoints = getRandomNumber(6, 11);
   for(let i=0;i<noPoints;i++){
     let rx=getRandomNumber(40,660);
     let ry= getRandomNumber(40,460)
     const point = kpsContainer.circle(5)
     .center(rx,ry)
     .fill('#000');
-    let pt= new Point(rx,ry);
-    kpsSVGMap.set(pt,point);//
+    let pt= [rx, ry];
+    kpsSVGMap.set(pt.toString(),[point]);//
     kpsPoints.push(pt);
   }
 });
@@ -618,10 +725,11 @@ document.getElementById('kpsClr').addEventListener('click', () => {
 
   kpsContainer.clear();
   for (const [key, value] of kpsSVGMap) {
+    while(value.length!==1){
+      let v= value.pop();
+      v.remove();
+    }
     kpsSVGMap.delete(key);
-  }
-  for (const [key, value] of kpslines) {
-    kpslines.delete(key);
   }
   
   sz=kpsPoints.length
@@ -636,30 +744,163 @@ document.getElementById('kpsClr').addEventListener('click', () => {
   for(let i=0;i<sz;i++){
     kpsActions.pop();
   }
-  sz= solidLine2.length
+  sz=templines.length;
   for(let i=0;i<sz;i++){
-    solidLine2.pop();
+    templines.pop();
   }
-  sz= dotLine2.length
+  sz=hidden.length;
   for(let i=0;i<sz;i++){
-    dotLine2.pop();
+    hidden.pop();
   }
-
+  sz=hullines.length;
+  for(let i=0;i<sz;i++){
+    hullines.pop();
+  }
+  console.log("hello",kpsSVGMap)
 });
 
+document.getElementById('kpsLClr').addEventListener('click', () => {
+  document.getElementById("kpsRun").disabled = false;
+
+  for (const [key, value] of kpsSVGMap) {
+    while(value.length!==1){
+      let v= value.pop();
+      v.remove();
+    }
+  }
+  
+  sz=kpsHull.length
+  for(let i=0;i<sz;i++){
+    kpsHull.pop();
+  }
+  sz=kpsActions.length;
+  for(let i=0;i<sz;i++){
+    kpsActions.pop();
+  }
+  sz=templines.length;
+  for(let i=0;i<sz;i++){
+    templines.pop();
+  }
+  sz=hidden.length;
+  for(let i=0;i<sz;i++){
+    let hid=hidden.pop();
+    hid.remove();
+  }
+  sz=hullines.length;
+  for(let i=0;i<sz;i++){
+    let hl=hullines.pop();
+    hl.remove();
+  }
+  
+});
+
+const findintercept=(pt,slp)=>{
+      let x_int= -pt[1]/slp+pt[0];
+      let y_int= pt[1]-slp*pt[0];
+      return [[x_int,0],[0,y_int]];
+    }
+
 //kps actions runner
-const kpsPerformActions=(actionArray,delay,pointMap)=>{
+const hidden=[];
+const templines=[];
+const hullines=[];
+const dottedlines=new Map();
+const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hullines,dottedlines)=>{
   if (actionArray.length === 0) return; 
   const action = actionArray.shift();
   console.log(action);
   if(action[0]==="kagp"){
     let pt=kpsMarkHull(action[1]);
-    kpsSVGMap[action[1]].push(pt);
+    // kpsSVGMap[action[1]].push(pt);
+    let arr= pointMap.get(action[1].toString());
+    arr.push(pt);
+    pointMap.set(action[1].toString(),arr);
+    hullpt.add(action[1].toString());
+  }
+  else if(action[0]==="kabp"){
+    let pt =kpsMarkCur(action[1]);
+    console.log(action[1]);
+    console.log(pointMap.has(action[1].toString()))
+    // console.log(pointMap);
+    let arr= pointMap.get(action[1].toString());
+    console.log(arr)
+    arr.push(pt)
+    pointMap.set(action[1].toString(),arr);
+    hullpt.add(action[1].toString());
   }
   else if(action[0]==="hidp"){
     for(pt of action[1]){
-
+      if(hullpt.has(pt.toString())){
+        continue;
+      }
+      console.log(pt);
+      // console.log(pointMap.has(pt.toString()))
+      let hidpt= kpsMarkHidden(pt);
+      let arr= pointMap.get(pt.toString());
+      arr.push(hidpt);
+      pointMap.set(pt.toString(),arr);
+      hidden.push(hidpt);
     }
   }
-  setTimeout(() => kpsPerformActions(actionArray, delay), delay);
+  else if(action[0]==="uhid"){
+    while(hidden.length!==0){
+      let pt= hidden.pop();
+      pt.remove();
+    }
+    console.log(hullines)
+    for(let i=0;i<hullines.length;i++){
+      hullines[i].stroke({ color: '#CC6CE7' });
+    }
+  }
+  else if(action[0]==="dsl"){
+    console.log(pointMap.has(action[1].toString()),pointMap.has(action[2].toString()))
+    const line = kpsContainer.line(action[1][0], action[1][1], action[2][0], action[2][1])
+          .stroke({ width: 3, color: '#f06' })
+    hullines.push(line);
+  }
+  else if(action[0]==="ddl"){
+    const line = kpsContainer.line(action[1][0], action[1][1], action[2][0], action[2][1])
+          .stroke({ width: 3, color: '#000' })
+          .attr('stroke-dasharray', '10,5');
+    dottedlines.set([action[1],action[2]].toString(),line);
+  }
+  else if(action[0]==="crdl" ||action[0]==="cgdl" || action[0]==="cydl"){
+    let arr= [action[1],action[2]].toString();
+    console.log(arr);
+    console.log(dottedlines);
+    let line=dottedlines.get(arr);
+    if(action[0]==="crdl"){
+      line.stroke({ color: '#D20103' });
+    }else if(action[0]==="cgdl"){
+      line.stroke({ color: '#7DDA58' });
+    }else{
+      line.stroke({ color: '#FFDE59' });
+    }
+  }
+  else if(action[0]==="radl"){
+    while(templines.length!==0){
+      let t= templines.pop();
+      t.remove();
+    }
+    for(let [key,val] of dottedlines){
+      val.remove();
+    }
+    dottedlines.clear();
+    console.log("dottttt",dottedlines)
+    console.log("tmpllll",templines);
+  }
+  else if(action[0]==="kmedx"){
+    const line = kpsContainer.line(action[1], 25, action[1], 475)
+          .stroke({ width: 2, color: '#337357' })
+          .attr('stroke-dasharray', '10,5');
+    templines.push(line);
+  }
+  else if(action[0]==="dsup"){
+    let endpts= findintercept(action[1],action[2]);
+    const line = kpsContainer.line(endpts[0][0],endpts[0][1],endpts[1][0],endpts[1][1])
+          .stroke({ width: 2, color: '#fcba03' })
+          .attr('stroke-dasharray', '10,5');
+    templines.push(line);
+  }
+  setTimeout(() => kpsPerformActions(actionArray, delay,pointMap,hullpt,hidden,templines,hullines,dottedlines), delay);
 }
