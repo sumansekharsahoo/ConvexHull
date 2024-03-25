@@ -59,3 +59,15 @@ body{
   background-color: #EEF5FF;
   cursor: crosshair;
 }
+
+.footer{
+  background-color: #fcf1d3;
+  width: 100%;
+  font-size: 20px;
+  padding: 10px 0px;
+  text-align: center;
+}
+
+.lhead{
+  font-size: 20px;
+}

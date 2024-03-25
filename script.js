@@ -922,3 +922,72 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
   }
   setTimeout(() => kpsPerformActions(actionArray, delay,pointMap,hullpt,hidden,templines,hullines,dottedlines), delay);
 }
+
+//legend
+const legendBox = SVG().addTo('#legend').size(500,175);
+const dsup= legendBox.line(0,25,90,25)
+          .stroke({ width: 2, color: '#820300' })
+          .attr('stroke-dasharray', '10,5');
+const dsuptxt= legendBox.text('Supporting line')
+          .move(110, 15)
+          .fill('#333')
+          .font({
+            family: 'Times New Roman',
+            size: 17,
+            anchor: 'start'
+          });
+const kmedx= legendBox.line(0,50,90,50)
+          .stroke({ width: 2, color: '#00bbbb' })
+          .attr('stroke-dasharray', '10,5');
+const kmedxtxt= legendBox.text('Median line')
+          .move(110, 40)
+          .fill('#333')
+          .font({
+            family: 'Times New Roman',
+            size: 17,
+            anchor: 'start'
+          });
+const ddl= legendBox.line(0,75,90,75)
+          .stroke({ width: 2, color: '#A9A9A9' })
+          .attr('stroke-dasharray', '10,5');
+const ddltxt= legendBox.text('Lines drawn between random pair of candidate points')
+          .move(110, 65)
+          .fill('#333')
+          .font({
+            family: 'Times New Roman',
+            size: 17,
+            anchor: 'start'
+          });
+const crdl= legendBox.line(0,100,90,100)
+          .stroke({ width: 2, color: '#D20103' })
+          .attr('stroke-dasharray', '10,5');
+const crdltxt= legendBox.text('Lines that have slope less than median slope')
+          .move(110, 90)
+          .fill('#333')
+          .font({
+            family: 'Times New Roman',
+            size: 17,
+            anchor: 'start'
+          });
+const cydl= legendBox.line(0,125,90,125)
+          .stroke({ width: 2, color: '#FFDE59' })
+          .attr('stroke-dasharray', '10,5');
+const cydltxt= legendBox.text('Lines that have slope equal to median slope')
+          .move(110, 115)
+          .fill('#333')
+          .font({
+            family: 'Times New Roman',
+            size: 17,
+            anchor: 'start'
+          });
+const cgdl= legendBox.line(0,150,90,150)
+          .stroke({ width: 2, color: '#7DDA58' })
+          .attr('stroke-dasharray', '10,5');
+const cgdltxt= legendBox.text('Lines that have slope greater than median slope')
+          .move(110, 140)
+          .fill('#333')
+          .font({
+            family: 'Times New Roman',
+            size: 17,
+            anchor: 'start'
+          });
