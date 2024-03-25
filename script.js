@@ -1,3 +1,6 @@
+const timeoutSelect = document.getElementById('selBox');
+const timeoutSelect2 = document.getElementById('selBox2');
+
 //global vars
 const jmSVGMap = new Map();
 const jmPoints=[];
@@ -172,11 +175,15 @@ const markCurPoint=(point)=>{
 const solidLine=[]
 const dotLine=[]
 const circles=[]
+document.getElementById("jmLClr").disabled = true;
 document.getElementById('jmRun').addEventListener('click', () => {
-  Jarvis(jmPoints,jmSVGMap,jHull, jActions)
+  const selectedTimeout = timeoutSelect.value;
+  document.getElementById("jmRand").disabled = true;
+  document.getElementById("jmLClr").disabled = false;
   document.getElementById("jmRun").disabled = true;
+  Jarvis(jmPoints,jmSVGMap,jHull, jActions)
   // console.log(jActions);
-  performActions(jActions,solidLine,dotLine,circles,600);
+  performActions(jActions,solidLine,dotLine,circles,selectedTimeout);
 });
 
 document.getElementById('jmRand').addEventListener('click', () => {
@@ -195,7 +202,8 @@ document.getElementById('jmRand').addEventListener('click', () => {
 
 document.getElementById('jmClr').addEventListener('click', () => {
   document.getElementById("jmRun").disabled = false;
-
+  document.getElementById("jmLClr").disabled = true;
+  document.getElementById("jmRand").disabled = false;
   jarvisContainer.clear();
   for (const [key, value] of jmSVGMap) {
     jmSVGMap.delete(key);
@@ -226,6 +234,7 @@ document.getElementById('jmClr').addEventListener('click', () => {
 
 document.getElementById('jmLClr').addEventListener('click', () => {
   document.getElementById("jmRun").disabled = false;
+  const selectedTimeout = timeoutSelect.value;
   sz=jHull.length
   for(let i=0;i<sz;i++){
     jHull.pop();
@@ -252,14 +261,14 @@ document.getElementById('jmLClr').addEventListener('click', () => {
   Jarvis(jmPoints,jmSVGMap,jHull, jActions)
   document.getElementById("jmRun").disabled = true;
   // console.log(jActions);
-  performActions(jActions,solidLine,dotLine,circles,600);
+  performActions(jActions,solidLine,dotLine,circles,selectedTimeout);
 });
 
 //jarvis March actions runner
 function performActions(actionArray, solidLine,dotLine, circles, delay) {
   if (actionArray.length === 0) return; 
   const action = actionArray.shift();
-  console.log(action);
+  // console.log(action);
   if(action[0]==="ccb"){
     circles.push(markCurPoint(action[1]));
   }
@@ -407,7 +416,7 @@ function getBridge(points, median,actions,flp) {
     let med_index = Math.floor(slopes.length / 2) - (slopes.length % 2 === 0 ? 1 : 0);
     let med_slope = quickselect(slopes, med_index)
     let small = [], equal = [], large = []
-    console.log("pairs",pairs);
+    // console.log("pairs",pairs);
     for (let i in slopes) {
         if (slopes[i] < med_slope){
           small.push(pairs[i])
@@ -434,9 +443,9 @@ function getBridge(points, median,actions,flp) {
           }
         }
     }
-    console.log("small",small);
-    console.log("large",large);
-    console.log("equal",equal);
+    // console.log("small",small);
+    // console.log("large",large);
+    // console.log("equal",equal);
 
     let max_intercept = -Infinity
     let max_point=[-Infinity,-Infinity]
@@ -553,7 +562,7 @@ function connect(p1, p2, points, actions,flp) {
     }
     let [left, right] = getBridge(points, (leftMax[0] + rightMin[0]) / 2,actions,flp)
     actions.push(["radl"]);
-    console.log(flp,left,right)
+    // console.log(flp,left,right)
     if(flp){
       actions.push(["dsl",flipval(left),flipval(right)]);
     }else{
@@ -659,7 +668,7 @@ function convexHull(points,actions) {
     lowerHull = flipped(lowerHull);
     actions.push(["uhid"])
     // console.log(upperHull)
-    console.log("######################")
+    // console.log("######################")
     
 
     if (upperHull[upperHull.length - 1][0] === lowerHull[0][0] && upperHull[upperHull.length - 1][1] === lowerHull[0][1])
@@ -694,11 +703,15 @@ const kpsMarkHidden=(point)=>{
 }
 
 //kps buttons
+document.getElementById("kpsLClr").disabled = true;
 document.getElementById('kpsRun').addEventListener('click', () => {
-  convexHull(kpsPoints,kpsActions)
+  const selectedTimeout = timeoutSelect2.value;
+  document.getElementById("kpsRand").disabled = true;
+  document.getElementById("kpsLClr").disabled = false;
   document.getElementById("kpsRun").disabled = true;
+  convexHull(kpsPoints,kpsActions)
   // console.log(kpsActions);
-  kpsPerformActions(kpsActions,500,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
+  kpsPerformActions(kpsActions,selectedTimeout,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
 
 });
 
@@ -718,7 +731,8 @@ document.getElementById('kpsRand').addEventListener('click', () => {
 
 document.getElementById('kpsClr').addEventListener('click', () => {
   document.getElementById("kpsRun").disabled = false;
-
+  document.getElementById("kpsLClr").disabled = true;
+  document.getElementById("kpsRand").disabled = false;
   kpsContainer.clear();
   for (const [key, value] of kpsSVGMap) {
     while(value.length!==1){
@@ -759,7 +773,7 @@ document.getElementById('kpsClr').addEventListener('click', () => {
 
 document.getElementById('kpsLClr').addEventListener('click', () => {
   document.getElementById("kpsRun").disabled = false;
-
+  const selectedTimeout = timeoutSelect2.value;
   for (const [key, value] of kpsSVGMap) {
     while(value.length!==1){
       let v= value.pop();
@@ -794,7 +808,7 @@ document.getElementById('kpsLClr').addEventListener('click', () => {
   convexHull(kpsPoints,kpsActions)
   document.getElementById("kpsRun").disabled = true;
   // console.log(kpsActions);
-  kpsPerformActions(kpsActions,500,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
+  kpsPerformActions(kpsActions,selectedTimeout,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
 });
 
 const findintercept=(pt,slp)=>{
@@ -811,7 +825,7 @@ const dottedlines=new Map();
 const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hullines,dottedlines)=>{
   if (actionArray.length === 0) return; 
   const action = actionArray.shift();
-  console.log(action);
+  // console.log(action);
   if(action[0]==="kagp"){
     let pt=kpsMarkHull(action[1]);
     // kpsSVGMap[action[1]].push(pt);
@@ -825,7 +839,7 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
     let pt2 =kpsMarkCur(action[2]);
     // console.log(pointMap);
     let arr= pointMap.get(action[1].toString());
-    console.log(arr)
+    // console.log(arr)
     arr.push(pt)
     arr.push(pt2)
     pointMap.set(action[1].toString(),arr);
@@ -837,7 +851,7 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
       if(hullpt.has(pt.toString())){
         continue;
       }
-      console.log(pt);
+      // console.log(pt);
       // console.log(pointMap.has(pt.toString()))
       let hidpt= kpsMarkHidden(pt);
       let arr= pointMap.get(pt.toString());
@@ -851,13 +865,13 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
       let pt= hidden.pop();
       pt.remove();
     }
-    console.log(hullines)
+    // console.log(hullines)
     for(let i=0;i<hullines.length;i++){
       hullines[i].stroke({ color: '#f06'});
     }
   }
   else if(action[0]==="dsl"){
-    console.log(pointMap.has(action[1].toString()),pointMap.has(action[2].toString()))
+    // console.log(pointMap.has(action[1].toString()),pointMap.has(action[2].toString()))
     const line = kpsContainer.line(action[1][0], action[1][1], action[2][0], action[2][1])
           .stroke({ width: 3, color: '#E26EE5' })
     hullines.push(line);
@@ -870,8 +884,8 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
   }
   else if(action[0]==="crdl" ||action[0]==="cgdl" || action[0]==="cydl"){
     let arr= [action[1],action[2]].toString();
-    console.log(arr);
-    console.log(dottedlines);
+    // console.log(arr);
+    // console.log(dottedlines);
     let line=dottedlines.get(arr);
     if(action[0]==="crdl"){
       line.stroke({ color: '#D20103' });
@@ -890,8 +904,8 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
       val.remove();
     }
     dottedlines.clear();
-    console.log("dottttt",dottedlines)
-    console.log("tmpllll",templines);
+    // console.log("dottttt",dottedlines)
+    // console.log("tmpllll",templines);
   }
   else if(action[0]==="kmedx"){
     const line = kpsContainer.line(action[1], 25, action[1], 475)
