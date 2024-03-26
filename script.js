@@ -606,12 +606,20 @@ function connect(p1, p2, points, actions,flp) {
 
     return connect(p1, left, small,actions,flp).concat(connect(right, p2, large,actions,flp))
 }
-
-function getUpperHull(points,actions,flp) {
+let leftmostpts=[]
+let rightmostpts=[]
+function getUpperHull(points,actions,flp,leftarr,rightarr) {
     let leftMost = points[0], rightMost = points[0]
     for (let i = 1; i < points.length; i++) {
         if (points[i][0] < leftMost[0])
             leftMost = points[i]
+    }
+    if(!flp){
+      for(let i=0;i<points.length;i++){
+        if(points[i][0]===leftMost[0]){
+          leftarr.push(points[i]);
+        }
+      }
     }
     for (let i = 0; i < points.length; i++) {
         if (points[i][0] === leftMost[0] && points[i][1] > leftMost[1])
@@ -621,6 +629,13 @@ function getUpperHull(points,actions,flp) {
     for (let i = 1; i < points.length; i++) {
         if (points[i][0] > rightMost[0])
             rightMost = points[i]
+    }
+    if(!flp){
+      for(let i=0;i<points.length;i++){
+        if(points[i][0]===rightMost[0]){
+          rightarr.push(points[i]);
+        }
+      }
     }
     for (let i = 0; i < points.length; i++) {
         if (points[i][0] === rightMost[0] && points[i][1] > rightMost[1])
@@ -657,18 +672,28 @@ function getUpperHull(points,actions,flp) {
     return connect(leftMost, rightMost, points,actions, flp)
 }
 
-function convexHull(points,actions) {
-    let upperHull = getUpperHull(points,actions,0);
+function convexHull(points,actions,leftarr,rightarr) {
+    let upperHull = getUpperHull(points,actions,0,leftarr,rightarr);
     //unhide hidden
     actions.push(["uhid"])
     let flippedPoints = flipped(points);
     actions.push(["radl"]);
     // console.log("Flipped Points: ", flippedPoints)
-    let lowerHull = getUpperHull(flippedPoints,actions,1);
+    let lowerHull = getUpperHull(flippedPoints,actions,1,leftarr,rightarr);
     lowerHull = flipped(lowerHull);
     actions.push(["uhid"])
     // console.log(upperHull)
     // console.log("######################")
+    // console.log(leftarr)
+    // console.log(rightarr)
+    if(leftarr.length>=2){
+      const sortedleft = leftarr.sort((a, b) => a[1] - b[1]);
+      actions.push(["xterm",sortedleft]);
+    }
+    if(rightarr.length>=2){
+      const sortedright= rightarr.sort((a, b) => a[1] - b[1]);
+      actions.push(["xterm",sortedright]);
+    }
     
 
     if (upperHull[upperHull.length - 1][0] === lowerHull[0][0] && upperHull[upperHull.length - 1][1] === lowerHull[0][1])
@@ -709,7 +734,7 @@ document.getElementById('kpsRun').addEventListener('click', () => {
   document.getElementById("kpsRand").disabled = true;
   document.getElementById("kpsLClr").disabled = false;
   document.getElementById("kpsRun").disabled = true;
-  convexHull(kpsPoints,kpsActions)
+  convexHull(kpsPoints,kpsActions,leftmostpts,rightmostpts)
   // console.log(kpsActions);
   kpsPerformActions(kpsActions,selectedTimeout,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
 
@@ -769,6 +794,14 @@ document.getElementById('kpsClr').addEventListener('click', () => {
     val.remove();
   }
   dottedlines.clear();
+  sz= leftmostpts.length;
+  for(let i=0;i<sz;i++){
+    leftmostpts.pop();
+  }
+  sz= rightmostpts.length;
+  for(let i=0;i<sz;i++){
+    rightmostpts.pop();
+  }
 });
 
 document.getElementById('kpsLClr').addEventListener('click', () => {
@@ -805,7 +838,7 @@ document.getElementById('kpsLClr').addEventListener('click', () => {
     let hl=hullines.pop();
     hl.remove();
   }
-  convexHull(kpsPoints,kpsActions)
+  convexHull(kpsPoints,kpsActions,leftmostpts,rightmostpts)
   document.getElementById("kpsRun").disabled = true;
   // console.log(kpsActions);
   kpsPerformActions(kpsActions,selectedTimeout,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
@@ -919,6 +952,21 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
           .stroke({ width: 2, color: '#820300' })
           .attr('stroke-dasharray', '10,5');
     templines.push(line);
+  }
+  else if(action[0]==="xterm"){
+    // console.log(action)
+    for(let i=1;i<action[1].length;i++){
+      const line = kpsContainer.line(action[1][i-1][0], action[1][i-1][1], action[1][i][0], action[1][i][1])
+          .stroke({ width: 3, color: '#f06' });
+      hullines.push(line);
+      
+    }
+    for(let i=0;i<action[1].length;i++){
+      let pt=kpsMarkHull(action[1][i]);
+      arr= pointMap.get(action[1][i].toString());
+      arr.push(pt);
+      pointMap.set(action[1][i].toString(),arr);
+    }
   }
   setTimeout(() => kpsPerformActions(actionArray, delay,pointMap,hullpt,hidden,templines,hullines,dottedlines), delay);
 }
