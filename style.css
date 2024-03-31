@@ -6,6 +6,21 @@ body{
   align-items: center;
 }
 
+.links{
+  position: absolute;
+  top: 37%;
+  right: 7%;
+}
+.link{
+  font-size: 22px;
+  margin-right: 18px;
+  text-decoration: none;
+  color: #EEF5FF;
+}
+.link:hover{
+  color: rgb(247, 236, 152);
+}
+
 .algoHeading{
   font-size: 35px;
   text-align: center;
@@ -15,7 +30,7 @@ body{
   background-color: black;
   padding: 15px 0px;
   margin-bottom: 15px;
-  display: relative;
+  position: relative;
 }
 .header{
   font-size: 40px;
