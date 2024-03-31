@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: doc_script.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: doc_script.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * @file script.js
  * @author Sandeep YSP
  * @author Suman Sekhar Sahoo
@@ -14,7 +42,7 @@ const timeoutSelect = document.getElementById('selBox');
 /** @const {HTMLSelectElement} timeoutSelect2 - Reference to the HTML select element for setting the delay between visualization steps for the Kirkpatrick-Seidel algorithm. */
 const timeoutSelect2 = document.getElementById('selBox2');
 
-/** @const {Map<Point, SVGCircleElement>} jmSVGMap - Map that stores the SVG circle elements for the points in the Jarvis March algorithm. */
+/** @const {Map&lt;Point, SVGCircleElement>} jmSVGMap - Map that stores the SVG circle elements for the points in the Jarvis March algorithm. */
 const jmSVGMap = new Map();
 
 /** @const {Point[]} jmPoints - Array that stores the points for the Jarvis March algorithm. */
@@ -26,13 +54,13 @@ const jHull = [];
 /** @const {string[]} jActions - Array that stores the actions to be performed during the Jarvis March visualization. */
 const jActions = [];
 
-/** @const {Map<string, SVGCircleElement[]>} kpsSVGMap - Map that stores the SVG circle elements for the points in the Kirkpatrick-Seidel algorithm. */
+/** @const {Map&lt;string, SVGCircleElement[]>} kpsSVGMap - Map that stores the SVG circle elements for the points in the Kirkpatrick-Seidel algorithm. */
 const kpsSVGMap = new Map();
 
 /** @const {number[][]} kpsPoints - Array that stores the points for the Kirkpatrick-Seidel algorithm. */
 const kpsPoints = [];
 
-/** @const {Set<string>} kpsHull - Set that stores the strings representing the points that form the convex hull in the Kirkpatrick-Seidel algorithm. */
+/** @const {Set&lt;string>} kpsHull - Set that stores the strings representing the points that form the convex hull in the Kirkpatrick-Seidel algorithm. */
 const kpsHull = new Set();
 
 /** @const {string[]} kpsActions - Array that stores the actions to be performed during the Kirkpatrick-Seidel visualization. */
@@ -154,12 +182,12 @@ function findNextOrigin(prev_o, o, points, action) {
   let best_angle = 360
   let best_point = null
   // console.log(o)
-  for (let i = 0; i < points.length; i++) {
+  for (let i = 0; i &lt; points.length; i++) {
     if (JSON.stringify(points[i]) === JSON.stringify(o) || JSON.stringify(points[i]) === JSON.stringify(prev_o)) {
       continue
     }
     let angle = findAngle(prev_o, o, points[i])
-    if (angle < best_angle) {
+    if (angle &lt; best_angle) {
       // drawCandLine(jarvisContainer,o,points[i]);
       if (flag === 0) {
         action.push(["asl", o, points[i]]);
@@ -193,7 +221,7 @@ function findNextOrigin(prev_o, o, points, action) {
 /**
  * @function Jarvis
  * @param {Point[]} points - The array of points.
- * @param {Map<Point, SVGCircleElement>} svgmap - The map that stores the SVG circle elements for the points.
+ * @param {Map&lt;Point, SVGCircleElement>} svgmap - The map that stores the SVG circle elements for the points.
  * @param {Point[]} hullpoints - The array to store the points that form the convex hull.
  * @param {string[]} action - The array to store the actions performed during the visualization.
  * @returns {Point[]} The array of points that form the convex hull.
@@ -203,7 +231,7 @@ function Jarvis(points, svgmap, hullpoints, action) {
   let hull = []
   let i = 0;
   let origin = new Point(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)
-  for (i = 0; i < points.length; i++) {
+  for (i = 0; i &lt; points.length; i++) {
     if (origin.y > points[i].y) {
       origin = JSON.parse(JSON.stringify(points[i]));
     }
@@ -281,7 +309,7 @@ document.getElementById('jmRun').addEventListener('click', () => {
 
 document.getElementById('jmRand').addEventListener('click', () => {
   const noPoints = getRandomNumber(8, 18);
-  for (let i = 0; i < noPoints; i++) {
+  for (let i = 0; i &lt; noPoints; i++) {
     let rx = getRandomNumber(40, 660);
     let ry = getRandomNumber(40, 460)
     const point = jarvisContainer.circle(5)
@@ -303,23 +331,23 @@ document.getElementById('jmClr').addEventListener('click', () => {
   }
 
   sz = jmPoints.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     jmPoints.pop();
   }
   sz = jHull.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     jHull.pop();
   }
   sz = jActions.length;
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     jActions.pop();
   }
   sz = solidLine.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     solidLine.pop();
   }
   sz = dotLine.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     dotLine.pop();
   }
 
@@ -329,25 +357,25 @@ document.getElementById('jmLClr').addEventListener('click', () => {
   document.getElementById("jmRun").disabled = false;
   const selectedTimeout = timeoutSelect.value;
   sz = jHull.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     jHull.pop();
   }
   sz = jActions.length;
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     jActions.pop();
   }
   sz = solidLine.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     let ps = solidLine.pop();
     ps.remove();
   }
   sz = dotLine.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     let ps = dotLine.pop();
     ps.remove();
   }
   sz = circles.length
-  for (let i = 0; i < sz; i++) {
+  for (let i = 0; i &lt; sz; i++) {
     let ps = circles.pop();
     ps.remove();
   }
@@ -522,7 +550,7 @@ function getBridge(points, median,actions,flp) {
     if (points_set.size === 1)
         candidates.add(popFromSet(points_set));
     let slopes = []
-    for (let i = 0; i < pairs.length; i++) {
+    for (let i = 0; i &lt; pairs.length; i++) {
         let p1 = pairs[i][0]
         let p2 = pairs[i][1]
         if (p1[0] === p2[0]) {
@@ -556,7 +584,7 @@ function getBridge(points, median,actions,flp) {
     let small = [], equal = [], large = []
     // console.log("pairs",pairs);
     for (let i in slopes) {
-        if (slopes[i] < med_slope){
+        if (slopes[i] &lt; med_slope){
           small.push(pairs[i])
           if(flp){
             actions.push(["crdl",flipval(pairs[i][0]),flipval(pairs[i][1])]);
@@ -588,7 +616,7 @@ function getBridge(points, median,actions,flp) {
     let max_intercept = -Infinity
     let max_point=[-Infinity,-Infinity]
     for (let point of points)
-    if (max_intercept < point[1] - med_slope * point[0]){
+    if (max_intercept &lt; point[1] - med_slope * point[0]){
       max_intercept = point[1] - med_slope * point[0]
       max_point=point
     }
@@ -611,13 +639,13 @@ function getBridge(points, median,actions,flp) {
     max_set = Array.from(max_set);
 
     let left = max_set[0];
-    for (let i = 1; i < max_set.length; i++)
-        if ((max_set[i][0] < left[0]) || (max_set[i][0] === left[0] && max_set[i][1] < left[1]))
+    for (let i = 1; i &lt; max_set.length; i++)
+        if ((max_set[i][0] &lt; left[0]) || (max_set[i][0] === left[0] &amp;&amp; max_set[i][1] &lt; left[1]))
             left = max_set[i]
 
     let right = max_set[0];
-    for (let i = 1; i < max_set.length; i++)
-        if ((max_set[i][0] > right[0]) || (max_set[i][0] === right[0] && max_set[i][1] > right[1]))
+    for (let i = 1; i &lt; max_set.length; i++)
+        if ((max_set[i][0] > right[0]) || (max_set[i][0] === right[0] &amp;&amp; max_set[i][1] > right[1]))
             right = max_set[i]
     
     //highlight l and r 
@@ -630,13 +658,13 @@ function getBridge(points, median,actions,flp) {
     // console.log(right)
     
 
-    if (left[0] <= median && right[0] >= median)
+    if (left[0] &lt;= median &amp;&amp; right[0] >= median)
     {
       return [left, right]
 
     }
 
-    if (right[0] <= median) {
+    if (right[0] &lt;= median) {
         let largeEqual = new Set([...large, ...equal]);
         for (let [pt, point] of largeEqual) {
             candidates.add(point);
@@ -720,7 +748,7 @@ function connect(p1, p2, points, actions,flp) {
     
     small.add(left);
     for (let point of points)
-        if (point[0] < left[0])
+        if (point[0] &lt; left[0])
             small.add(point);
     
     large.add(right);
@@ -768,35 +796,35 @@ let rightmostpts=[]
  */
 function getUpperHull(points,actions,flp,leftarr,rightarr) {
     let leftMost = points[0], rightMost = points[0]
-    for (let i = 1; i < points.length; i++) {
-        if (points[i][0] < leftMost[0])
+    for (let i = 1; i &lt; points.length; i++) {
+        if (points[i][0] &lt; leftMost[0])
             leftMost = points[i]
     }
     if(!flp){
-      for(let i=0;i<points.length;i++){
+      for(let i=0;i&lt;points.length;i++){
         if(points[i][0]===leftMost[0]){
           leftarr.push(points[i]);
         }
       }
     }
-    for (let i = 0; i < points.length; i++) {
-        if (points[i][0] === leftMost[0] && points[i][1] > leftMost[1])
+    for (let i = 0; i &lt; points.length; i++) {
+        if (points[i][0] === leftMost[0] &amp;&amp; points[i][1] > leftMost[1])
             leftMost = points[i]
     }
 
-    for (let i = 1; i < points.length; i++) {
+    for (let i = 1; i &lt; points.length; i++) {
         if (points[i][0] > rightMost[0])
             rightMost = points[i]
     }
     if(!flp){
-      for(let i=0;i<points.length;i++){
+      for(let i=0;i&lt;points.length;i++){
         if(points[i][0]===rightMost[0]){
           rightarr.push(points[i]);
         }
       }
     }
-    for (let i = 0; i < points.length; i++) {
-        if (points[i][0] === rightMost[0] && points[i][1] > rightMost[1])
+    for (let i = 0; i &lt; points.length; i++) {
+        if (points[i][0] === rightMost[0] &amp;&amp; points[i][1] > rightMost[1])
             rightMost = points[i]
     }
     if(flp){
@@ -808,7 +836,7 @@ function getUpperHull(points,actions,flp,leftarr,rightarr) {
     newPoints.push(leftMost)
     let miny= Math.min(leftMost[1],rightMost[1]);
     for (let point of points) {
-      if (point[0] > leftMost[0] && point[0] < rightMost[0] && point[1]>=miny){
+      if (point[0] > leftMost[0] &amp;&amp; point[0] &lt; rightMost[0] &amp;&amp; point[1]>=miny){
         newPoints.push(point)
       }
     }
@@ -863,9 +891,9 @@ function convexHull(points,actions,leftarr,rightarr) {
     }
     
 
-    if (upperHull[upperHull.length - 1][0] === lowerHull[0][0] && upperHull[upperHull.length - 1][1] === lowerHull[0][1])
+    if (upperHull[upperHull.length - 1][0] === lowerHull[0][0] &amp;&amp; upperHull[upperHull.length - 1][1] === lowerHull[0][1])
         upperHull.pop();
-    if (upperHull[0][0] === lowerHull[lowerHull.length - 1][0] && upperHull[0][1] === lowerHull[lowerHull.length - 1][1])
+    if (upperHull[0][0] === lowerHull[lowerHull.length - 1][0] &amp;&amp; upperHull[0][1] === lowerHull[lowerHull.length - 1][1])
         lowerHull.pop();
 
     return upperHull.concat(lowerHull);
@@ -927,7 +955,7 @@ document.getElementById('kpsRun').addEventListener('click', () => {
 
 document.getElementById('kpsRand').addEventListener('click', () => {
   const noPoints = getRandomNumber(8, 11);
-  for(let i=0;i<noPoints;i++){
+  for(let i=0;i&lt;noPoints;i++){
     let rx=getRandomNumber(40,660);
     let ry= getRandomNumber(40,460)
     const point = kpsContainer.circle(5)
@@ -953,26 +981,26 @@ document.getElementById('kpsClr').addEventListener('click', () => {
   }
   
   sz=kpsPoints.length
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     kpsPoints.pop();
   }
   for(let i of kpsHull){
     kpsHull.delete(i)
   }
   sz=kpsActions.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     kpsActions.pop();
   }
   sz=templines.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     templines.pop();
   }
   sz=hidden.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     hidden.pop();
   }
   sz=hullines.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     hullines.pop();
   }
   for(const [key,val] of dottedlines){
@@ -980,11 +1008,11 @@ document.getElementById('kpsClr').addEventListener('click', () => {
   }
   dottedlines.clear();
   sz= leftmostpts.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     leftmostpts.pop();
   }
   sz= rightmostpts.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     rightmostpts.pop();
   }
 });
@@ -1006,20 +1034,20 @@ document.getElementById('kpsLClr').addEventListener('click', () => {
     kpsHull.delete(i)
   }
   sz=kpsActions.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     kpsActions.pop();
   }
   sz=templines.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     templines.pop();
   }
   sz=hidden.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     let hid=hidden.pop();
     hid.remove();
   }
   sz=hullines.length;
-  for(let i=0;i<sz;i++){
+  for(let i=0;i&lt;sz;i++){
     let hl=hullines.pop();
     hl.remove();
   }
@@ -1052,12 +1080,12 @@ const dottedlines=new Map();
  * @function kpsPerformActions
  * @param {string[]} actionArray - The array of actions to be performed during the visualization.
  * @param {number} delay - The delay (in milliseconds) between each step of the visualization.
- * @param {Map<string, SVGCircleElement[]>} pointMap - The map that stores the SVG circle elements for the points.
- * @param {Set<string>} hullpt - The set of strings representing the points that form the convex hull.
+ * @param {Map&lt;string, SVGCircleElement[]>} pointMap - The map that stores the SVG circle elements for the points.
+ * @param {Set&lt;string>} hullpt - The set of strings representing the points that form the convex hull.
  * @param {SVGCircleElement[]} hidden - The array to store the hidden points.
  * @param {SVGLineElement[]} templines - The array to store the temporary lines drawn during the visualization.
  * @param {SVGLineElement[]} hullines - The array to store the lines that form the convex hull.
- * @param {Map<string, SVGLineElement>} dottedlines - The map that stores the dotted lines drawn during the visualization.
+ * @param {Map&lt;string, SVGLineElement>} dottedlines - The map that stores the dotted lines drawn during the visualization.
  * @description This function takes an array of actions and executes them sequentially with the specified delay, updating the SVG elements accordingly for the Kirkpatrick-Seidel visualization.
  */
 const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hullines,dottedlines)=>{
@@ -1104,7 +1132,7 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
       pt.remove();
     }
     // console.log(hullines)
-    for(let i=0;i<hullines.length;i++){
+    for(let i=0;i&lt;hullines.length;i++){
       hullines[i].stroke({ color: '#f06'});
     }
   }
@@ -1160,13 +1188,13 @@ const kpsPerformActions=(actionArray,delay,pointMap,hullpt,hidden,templines,hull
   }
   else if(action[0]==="xterm"){
     // console.log(action)
-    for(let i=1;i<action[1].length;i++){
+    for(let i=1;i&lt;action[1].length;i++){
       const line = kpsContainer.line(action[1][i-1][0], action[1][i-1][1], action[1][i][0], action[1][i][1])
           .stroke({ width: 3, color: '#f06' });
       hullines.push(line);
       
     }
-    for(let i=0;i<action[1].length;i++){
+    for(let i=0;i&lt;action[1].length;i++){
       let pt=kpsMarkHull(action[1][i]);
       arr= pointMap.get(action[1][i].toString());
       arr.push(pt);
@@ -1245,3 +1273,26 @@ const cgdltxt= legendBox.text('Lines that have slope greater than median slope')
             anchor: 'start'
           });
     
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Point.html">Point</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Jarvis">Jarvis</a></li><li><a href="global.html#connect">connect</a></li><li><a href="global.html#convexHull">convexHull</a></li><li><a href="global.html#findAngle">findAngle</a></li><li><a href="global.html#findNextOrigin">findNextOrigin</a></li><li><a href="global.html#findintercept">findintercept</a></li><li><a href="global.html#flipped">flipped</a></li><li><a href="global.html#flipval">flipval</a></li><li><a href="global.html#getBridge">getBridge</a></li><li><a href="global.html#getRandomNumber">getRandomNumber</a></li><li><a href="global.html#getUpperHull">getUpperHull</a></li><li><a href="global.html#integerDivision">integerDivision</a></li><li><a href="global.html#jActions">jActions</a></li><li><a href="global.html#jHull">jHull</a></li><li><a href="global.html#jmPoints">jmPoints</a></li><li><a href="global.html#jmSVGMap">jmSVGMap</a></li><li><a href="global.html#kpsActions">kpsActions</a></li><li><a href="global.html#kpsHull">kpsHull</a></li><li><a href="global.html#kpsMarkCur">kpsMarkCur</a></li><li><a href="global.html#kpsMarkHidden">kpsMarkHidden</a></li><li><a href="global.html#kpsMarkHull">kpsMarkHull</a></li><li><a href="global.html#kpsPerformActions">kpsPerformActions</a></li><li><a href="global.html#kpsPoints">kpsPoints</a></li><li><a href="global.html#kpsSVGMap">kpsSVGMap</a></li><li><a href="global.html#markCurPoint">markCurPoint</a></li><li><a href="global.html#markHullPoint">markHullPoint</a></li><li><a href="global.html#performActions">performActions</a></li><li><a href="global.html#popFromSet">popFromSet</a></li><li><a href="global.html#quickselect">quickselect</a></li><li><a href="global.html#shallowEqualityCheck">shallowEqualityCheck</a></li><li><a href="global.html#timeoutSelect">timeoutSelect</a></li><li><a href="global.html#timeoutSelect2">timeoutSelect2</a></li><li><a href="global.html#x">x</a></li><li><a href="global.html#y">y</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Mar 31 2024 19:49:38 GMT+0530 (India Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
