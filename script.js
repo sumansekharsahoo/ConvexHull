@@ -333,6 +333,12 @@ function popFromSet(set) {
     return first;
 }
 
+function quickselectSlopes(slopes, k) {
+    let dummy = Array.from(slopes)
+    let sortedSlopes = dummy.sort((a, b) => a - b)
+    return sortedSlopes[k]
+}
+
 function quickselect(points, k) {
     let sortedPoints = points.sort((a, b) => {
         if (a[0] !== b[0])
@@ -414,7 +420,7 @@ function getBridge(points, median,actions,flp) {
     }
 
     let med_index = Math.floor(slopes.length / 2) - (slopes.length % 2 === 0 ? 1 : 0);
-    let med_slope = quickselect(slopes, med_index)
+    let med_slope = quickselectSlopes(slopes, med_index)
     let small = [], equal = [], large = []
     // console.log("pairs",pairs);
     for (let i in slopes) {
