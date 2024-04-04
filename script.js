@@ -40,9 +40,9 @@ const kpsContainer = SVG()
   .on('click', (event) => {
     const crect = kpscont.getBoundingClientRect();
     const point = kpsContainer.circle(5)
-      .center(event.clientX-crect.left, event.clientY-crect.top)
+      .center(Math.round(event.clientX-crect.left), Math.round(event.clientY-crect.top))
       .fill('#000');
-    let pt= [event.clientX-crect.left, event.clientY-crect.top];
+    let pt= [Math.round(event.clientX-crect.left), Math.round(event.clientY-crect.top)];
     kpsPoints.push(pt);
     kpsSVGMap.set(pt.toString(),[point]);
   });
@@ -694,7 +694,7 @@ function convexHull(points,actions,leftarr,rightarr) {
       const sortedright= rightarr.sort((a, b) => a[1] - b[1]);
       actions.push(["xterm",sortedright]);
     }
-    
+    actions.push(["radl"]);
 
     if (upperHull[upperHull.length - 1][0] === lowerHull[0][0] && upperHull[upperHull.length - 1][1] === lowerHull[0][1])
         upperHull.pop();
@@ -737,7 +737,7 @@ document.getElementById('kpsRun').addEventListener('click', () => {
   convexHull(kpsPoints,kpsActions,leftmostpts,rightmostpts)
   // console.log(kpsActions);
   kpsPerformActions(kpsActions,selectedTimeout,kpsSVGMap,kpsHull,hidden,templines,hullines,dottedlines);
-
+  // console.log(kpsPoints)
 });
 
 document.getElementById('kpsRand').addEventListener('click', () => {
