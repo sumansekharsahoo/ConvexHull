@@ -7,6 +7,7 @@
  * @author Kamalesh Ram R
  * @brief Implementation and web visualization of Jarvis March and Kirkpatrick-Seidel algorithms for finding the convex hull of a set of points using SVG.js package
  * @description Implementation and web visualization of Jarvis March and Kirkpatrick-Seidel algorithms for finding the convex hull of a set of points. Package used for visualization: SVG.js
+ * @link https://glittering-raindrop-a2b317.netlify.app/
  */
 
 /** @const {HTMLSelectElement} timeoutSelect - Reference to the HTML select element for setting the delay between visualization steps for the Jarvis March algorithm. */
