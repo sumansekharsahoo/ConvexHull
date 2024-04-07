@@ -187,6 +187,53 @@
 
         return connect(p1, left, small).concat(connect(right, p2, large));
       }
+      function mergeSort(arr) {
+        if (arr.length <= 1) {
+          return arr;
+        }
+
+        const middle = Math.floor(arr.length / 2);
+        const left = arr.slice(0, middle);
+        const right = arr.slice(middle);
+
+        return merge(mergeSort(left), mergeSort(right));
+      }
+
+      function merge(left, right) {
+        let result = [];
+        let leftIndex = 0;
+        let rightIndex = 0;
+
+        while (leftIndex < left.length && rightIndex < right.length) {
+          if (left[leftIndex] < right[rightIndex]) {
+            result.push(left[leftIndex]);
+            leftIndex++;
+          } else {
+            result.push(right[rightIndex]);
+            rightIndex++;
+          }
+        }
+
+        return result
+          .concat(left.slice(leftIndex))
+          .concat(right.slice(rightIndex));
+      }
+
+      function generateRandomNumbers(inputSize) {
+        const numbers = [];
+        for (let i = 0; i < inputSize; i++) {
+          numbers.push(Math.floor(Math.random() * 100));
+        }
+        return numbers;
+      }
+
+      function kpsAlgo(inputSize) {
+        const randomNumbers = generateRandomNumbers(inputSize);
+        console.log("Unsorted numbers:", randomNumbers);
+
+        const sortedNumbers = mergeSort(randomNumbers);
+        console.log("Sorted numbers:", sortedNumbers);
+      }
 
       function getUpperHull(points) {
         let leftMost = points[0],
@@ -271,7 +318,7 @@
 
       function measureRuntime(inputSize) {
         let start = performance.now();
-        let result = main(inputSize);
+        let result = kpsAlgo(inputSize);
         let end = performance.now();
         return end - start;
       }
@@ -286,11 +333,11 @@
       let chart = new Chart(ctx, {
         type: "line",
         data: {
-          labels: logInputSizes,
+          labels: inputSizes,
           datasets: [
             {
-              label: "Log(Runtime)",
-              data: logRuntimes,
+              label: "Runtime",
+              data: runtimes,
               borderColor: "rgba(75, 192, 192, 1)",
               borderWidth: 1,
             },
@@ -301,13 +348,13 @@
             x: {
               title: {
                 display: true,
-                text: "Log(Input Size)",
+                text: "Input Size",
               },
             },
             y: {
               title: {
                 display: true,
-                text: "Log(Runtime) (ms)",
+                text: "Runtime (ms)",
               },
             },
           },
